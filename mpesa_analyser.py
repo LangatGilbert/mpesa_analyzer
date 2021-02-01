@@ -115,7 +115,7 @@ def pdf_cleaner_wrangler(dfs):
     mpesa_df=mpesa_df.sort_values(by=['completion_time'],ascending =True)
 
     #convert the negative withdrawn as positive
-    #mpesa_df['withdrawn'] = abs(mpesa_df['withdrawn'])
+    mpesa_df['withdrawn'] = abs(mpesa_df['withdrawn'])
 
 
     #group the transactions
@@ -171,6 +171,9 @@ def pdf_cleaner_wrangler(dfs):
             text_group.append('unclassified')
             
     mpesa_df['transactions_group'] = text_group
+
+    #derive amount transacted
+    mpesa_df['total_amount'] = mpesa_df['withdrawn'] + mpesa_df['paid_in']
 
     return mpesa_df
             

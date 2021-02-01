@@ -97,9 +97,33 @@ def filedownload(df):
 
 st.markdown(filedownload(df_selected_group), unsafe_allow_html = True)
 
+# Group the data frame by month and item and extract a number of stats from each group
+mpesa_agg =df_selected_group.groupby(['transactions_cohort','transactions_group','receiver_desc'], as_index= False).agg({
+                                        # Find the min, max, and sum of the duration column
+                                        'withdrawn': ["count", sum],
+                                        # find the number of network type entries
+                                        'paid_in': [sum],
+                                        'total_amount':[sum]
+                                        }
+                                        )
+
+mpesa_agg.columns = [' '.join(col).strip() for col in mpesa_agg.columns.values]
+mpesa_agg = mpesa_agg.where(pd.notnull(mpesa_agg), None)
+
+#st.dataframe(mpesa_agg)
+
+
+#"label+value+percent parent+percent entry+percent root"
+fig =px.treemap(mpesa_agg, path=['transactions_cohort', 'transactions_group','receiver_desc'], values='total_amount sum')
+# this is what I don't like, accessing traces like this
+fig.data[0].textinfo = 'label+text+value+percent root'
+
+#fig.layout.hovertamplate = '%{label}<br>%{value}'
+fig.data[0].hovertemplate = '%{label}<br>%{value}'
+fig.show()
+
 #show bar of each cateory
 agree = st.button("Click to a visualization")
 if agree:
- st.bar_chart(df_selected_group['transactions_group'])
-
-#select = st.sidebar.selectbox('month', ['January','February','March', 'April', 'May', 'June', 'July', 'August'], key='1')
+ #st.bar_chart(df_selected_group['transactions_group'])
+ st.plotly_chart(fig)
