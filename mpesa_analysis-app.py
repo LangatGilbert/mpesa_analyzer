@@ -41,7 +41,7 @@ st.markdown("""
 This is an hobby project trying to understand my expenses|income during a specified period. The Goal is to answer the following:
 * Common income streams 
 * Common expenses
-* Most common merchants I transact with
+* Most common merchants I transact
 """
 )
 
