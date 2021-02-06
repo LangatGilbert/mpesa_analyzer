@@ -69,111 +69,111 @@ def pdf_cleaner_wrangler(dfs):
         df = pd.DataFrame(np.concatenate([df.values, df_s.values]), columns=df.columns)
 
     #renaming df columns
-    df.rename(columns = {'Receipt No.':'receipt_no','Completion Time':'completion_time',
-                        'Details':'details','Transaction\rStatus':'status', 'Paid In':'paid_in', 
-                        'Withdrawn':'withdrawn', 'Balance':'balance'}, inplace = True)
+    df.rename(columns = {'Receipt No.':'CODE','Completion Time':'TIME',
+                        'Details':'DETAILS','Transaction\rStatus':'STATUS', 'Paid In':'MONEY IN', 
+                        'Withdrawn':'MONEY OUT', 'Balance':'BALANCE'}, inplace = True)
 
     #drop row with null receipt number
-    mpesa_df = df[df['receipt_no'].notna()] 
+    mpesa_df = df[df['CODE'].notna()] 
 
 
     #clean the text columns
-    mpesa_df['details'] = mpesa_df['details'].str.replace('\r',' ')
+    mpesa_df['DETAILS'] = mpesa_df['DETAILS'].str.replace('\r',' ')
 
-    #filling null values in paid_in and withdrawn columns
-    mpesa_df[['paid_in','withdrawn','balance']] = mpesa_df[['paid_in','withdrawn','balance']].fillna(0)
+    #filling null values in MONEY IN and MONEY OUT columns
+    mpesa_df[['MONEY IN','MONEY OUT','BALANCE']] = mpesa_df[['MONEY IN','MONEY OUT','BALANCE']].fillna(0)
 
     #get string after dash
     receiptient = []
     for row in df.itertuples():
-        new = row.details.split("-")
+        new = row.DETAILS.split("-")
         receiptient.append(new[1] if 1 < len(new) else None)
 
-    mpesa_df['receiver_desc'] = receiptient
+    mpesa_df['RECIPIENT'] = receiptient
 
     #clean the receiver_desc columns
-    mpesa_df['receiver_desc'] = mpesa_df['receiver_desc'].str.replace('\r',' ')
+    mpesa_df['RECIPIENT'] = mpesa_df['RECIPIENT'].str.replace('\r',' ')
 
     #cleaning the numerical columns
-    num_col = ['paid_in','withdrawn','balance']
+    num_col = ['MONEY IN','MONEY OUT','BALANCE']
     for col in num_col:
         mpesa_df[col] = mpesa_df[col].replace(',', '',regex=True)
         mpesa_df[col] = pd.to_numeric(mpesa_df[col])
         
-    mpesa_df['completion_time']= pd.to_datetime(mpesa_df['completion_time'])
-    mpesa_df['details'] = mpesa_df['details'].astype(str)
+    mpesa_df['TIME']= pd.to_datetime(mpesa_df['TIME'])
+    mpesa_df['DETAILS'] = mpesa_df['DETAILS'].astype(str)
 
     #extract year,month and quarter transaction
-    mpesa_df['year'] = mpesa_df['completion_time'].dt.year
-    mpesa_df['month'] = mpesa_df['completion_time'].dt.month
+    mpesa_df['year'] = mpesa_df['TIME'].dt.year
+    mpesa_df['month'] = mpesa_df['TIME'].dt.month
     mpesa_df['month'] = mpesa_df['month'].apply(lambda x: calendar.month_name[x])
-    mpesa_df['quarter'] = mpesa_df['completion_time'].dt.quarter
+    mpesa_df['quarter'] = mpesa_df['TIME'].dt.quarter
 
-    mpesa_df['transactions_cohort']= mpesa_df['year'].astype(str) + "_" + mpesa_df['month'].astype(str)
+    mpesa_df['COHORT']= mpesa_df['year'].astype(str) + "_" + mpesa_df['month'].astype(str)
 
     #sorting df by date
-    mpesa_df=mpesa_df.sort_values(by=['completion_time'],ascending =True)
+    mpesa_df=mpesa_df.sort_values(by=['TIME'],ascending =True)
 
-    #convert the negative withdrawn as positive
-    mpesa_df['withdrawn'] = abs(mpesa_df['withdrawn'])
+    #convert the negative MONEY OUT as positive
+    mpesa_df['MONEY OUT'] = abs(mpesa_df['MONEY OUT'])
 
 
     #group the transactions
     text_group = []
     for row in mpesa_df.itertuples():
-        if 'Funds Charge' in row.details:
-            text_group.append('Funds Charges')
-        elif 'Business Payment from' in row.details:
+        if 'Funds Charge' in row.DETAILS:
+            text_group.append('Charges')
+        elif 'Business Payment from' in row.DETAILS:
             text_group.append('Business Payments')
-        elif 'Loan Repayment' in row.details:
+        elif 'Loan Repayment' in row.DETAILS:
             text_group.append('Loan Repayment')
-        elif 'Receive International Transfer From' in row.details:
-            text_group.append('International Funds')
-        elif 'Airtime' in row.details:
+        elif 'Receive International Transfer From' in row.DETAILS:
+            text_group.append('Received-International')
+        elif 'Airtime' in row.DETAILS:
             text_group.append('Airtime')
-        elif 'Customer Transfer to' in row.details:
-            text_group.append('Customer Transfer')
-        elif 'Customer Transfer Fuliza' in row.details:
+        elif 'Customer Transfer to' in row.DETAILS:
+            text_group.append('Sending')
+        elif 'Customer Transfer Fuliza' in row.DETAILS:
             text_group.append('Fuliza')   
-        elif 'Customer Withdrawal At' in row.details:
-            text_group.append('Customer Withdrawals')
-        elif 'Withdrawal Charge' in row.details: 
-            text_group.append('Withdrawal Charges')
-        elif 'Buy Bundles' in row.details: 
+        elif 'Customer Withdrawal At' in row.DETAILS:
+            text_group.append('Withdrawal')
+        elif 'Withdrawal Charge' in row.DETAILS: 
+            text_group.append('Charges')
+        elif 'Buy Bundles' in row.DETAILS: 
             text_group.append('Buy Bundles')
-        elif 'Pay Bill' in row.details:
+        elif 'Pay Bill' in row.DETAILS:
             text_group.append('Pay Bills')
-        elif 'Pay Bill Charge' in row.details:
-            text_group.append('Pay Bill Charges')
-        elif 'Merchant Payment' in row.details: 
+        elif 'Pay Bill Charge' in row.DETAILS:
+            text_group.append('Charges')
+        elif 'Merchant Payment' in row.DETAILS: 
             text_group.append('Merchant Payments')
-        elif 'Funds received from' in row.details: 
-            text_group.append('Funds Received')
-        elif 'OverDraft' in row.details: 
+        elif 'Funds received from' in row.DETAILS: 
+            text_group.append('Received')
+        elif 'OverDraft' in row.DETAILS: 
             text_group.append('Overdraft')
-        elif 'Promotion Payment from' in row.details: 
+        elif 'Promotion Payment from' in row.DETAILS: 
             text_group.append('Promotion Payments')
-        elif 'Deposit of Funds at ' in row.details: 
-            text_group.append('Funds Deposits')
-        elif 'M-Shwari Deposit' in row.details: 
+        elif 'Deposit of Funds at ' in row.DETAILS: 
+            text_group.append('Deposit')
+        elif 'M-Shwari Deposit' in row.DETAILS: 
             text_group.append('M-Shwari Deposit')
-        elif 'M-Shwari Withdraw' in row.details: 
+        elif 'M-Shwari Withdraw' in row.DETAILS: 
             text_group.append('M-Shwari Withdraws')
-        elif 'Pay Merchant Charge' in row.details: 
-            text_group.append('Mechant Pay Charges')
-        elif 'Reversal' in row.details: 
-            text_group.append('Reversals')
-        elif 'M-Shwari Lock Deposit' in row.details: 
+        elif 'Pay Merchant Charge' in row.DETAILS: 
+            text_group.append('Charges')
+        elif 'Reversal' in row.DETAILS: 
+            text_group.append('Reversal')
+        elif 'M-Shwari Lock Deposit' in row.DETAILS: 
             text_group.append('M-Shwari Deposits')
-        elif 'M-Shwari Loan Disburse' in row.details: 
+        elif 'M-Shwari Loan Disburse' in row.DETAILS: 
             text_group.append('M-Shwari Loan')
         else :
             text_group.append('unclassified')
             
-    mpesa_df['transactions_group'] = text_group
+    mpesa_df['ACTIVITY'] = text_group
 
     #derive amount transacted
-    mpesa_df['total_amount'] = mpesa_df['withdrawn'] + mpesa_df['paid_in']
+    mpesa_df['TOTAL AMOUNT'] = mpesa_df['MONEY OUT'] + mpesa_df['MONEY IN']
 
     return mpesa_df
             
