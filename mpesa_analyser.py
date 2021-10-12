@@ -5,6 +5,7 @@ import os
 import numpy as np
 from numpy import int64
 import pandas as pd
+pd.options.display.float_format = "{:,.2f}".format
 
 #for date manipulation
 import datetime as datetime
@@ -78,6 +79,7 @@ def pdf_cleaner_wrangler(dfs):
 
 
     #clean the text columns
+    mpesa_df['DETAILS'] = mpesa_df['DETAILS'].str.replace('M-Pesa','MPesa')
     mpesa_df['DETAILS'] = mpesa_df['DETAILS'].str.replace('\r',' ')
 
     #filling null values in MONEY IN and MONEY OUT columns
@@ -105,8 +107,7 @@ def pdf_cleaner_wrangler(dfs):
 
     #extract year,month and quarter transaction
     mpesa_df['year'] = mpesa_df['TIME'].dt.year
-    mpesa_df['month'] = mpesa_df['TIME'].dt.month
-    mpesa_df['month'] = mpesa_df['month'].apply(lambda x: calendar.month_name[x])
+    mpesa_df['month'] = (mpesa_df['TIME'].dt.month).apply(lambda x: "0"+str(x) if x<10 else x)
     mpesa_df['quarter'] = mpesa_df['TIME'].dt.quarter
 
     mpesa_df['COHORT']= mpesa_df['year'].astype(str) + "_" + mpesa_df['month'].astype(str)
