@@ -176,6 +176,11 @@ def pdf_cleaner_wrangler(dfs):
     #derive amount transacted
     mpesa_df['TOTAL AMOUNT'] = mpesa_df['MONEY OUT'] + mpesa_df['MONEY IN']
 
+    # mpesa_df.loc[mpesa_df['MONEY IN']!=0,'category'] = 'Inflow'
+    # mpesa_df.loc[mpesa_df['MONEY OUT']!=0,'category'] = 'Outflow'
+
+    mpesa_df['category'] =  mpesa_df.apply(lambda x : 'Inflow' if x['MONEY IN']!= 0 else 'Outflow', axis=1)
+
     return mpesa_df
             
 
