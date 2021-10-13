@@ -79,7 +79,7 @@ def pdf_cleaner_wrangler(dfs):
 
 
     #clean the text columns
-    mpesa_df['DETAILS'] = mpesa_df['DETAILS'].str.replace('M-Pesa','MPesa')
+    mpesa_df['DETAILS'] = mpesa_df['DETAILS'].str.replace('M-Pesa','MPESA')
     mpesa_df['DETAILS'] = mpesa_df['DETAILS'].str.replace('\r',' ')
 
     #filling null values in MONEY IN and MONEY OUT columns

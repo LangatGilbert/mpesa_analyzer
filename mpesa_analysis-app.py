@@ -22,6 +22,7 @@ import calendar
 
 #dashboard creation
 import streamlit as st
+st.set_page_config(layout="wide")
 
 from mpesa_analyser import pdf_cleaner_wrangler
 
@@ -41,13 +42,14 @@ sidebar_contents =  st.container()
 
 with header:
     #setting up the title
-    st.title("Analyse your M-PESA Transactions")
+    st.title("ANALYSE  YOUR M-PESA TRANSACTIONS")
     
     st.markdown("""
-    This is an hobby project trying to understand my expenses|income during a specified period. The Goal is to answer the following:
-    * Common income streams 
-    * Common expenses
-    * Most common merchants I transact
+    This helps you understand your M-Pesa inflows and outflows within a specified period. The Goal is to answer the following:
+    * Where does majority of my inflows come from?
+    * Where does my outflows go to?
+    * Who are top merchants I transact with?
+    * Which bills do I pay often?
     """
     )
 
@@ -61,7 +63,7 @@ with dataset:
     password = st.sidebar.text_input("Input your pdf password","Type Here",type = 'password')
 
     if uploaded_file is not None:
-
+        
         dfs = tabula.read_pdf(uploaded_file,pages="all",multiple_tables=True,password = password,stream=True, lattice=  True)
         
         mpesa_df = pdf_cleaner_wrangler(dfs)
@@ -112,20 +114,30 @@ with dataset:
         st.dataframe(df_selected_group.head())
 
 
+        # Group the data frame by month and item and extract a number of stats from each group
+        mpesa_agg =df_selected_group.groupby(['COHORT','ACTIVITY'], as_index= False).agg({
+                                                # Find the min, max, and sum of the duration column
+                                                'MONEY OUT': ["count", sum],
+                                                # find the number of network type entries
+                                                'MONEY IN': [sum],
+                                                # find the number of network type entries
+                                                'TOTAL AMOUNT': [sum]
+                                                                    }
+                                                                    )
+
+        mpesa_agg.columns = [' '.join(col).strip(' sum') for col in mpesa_agg.columns.values]
+        #mpesa_agg.loc['Total']= mpesa_agg.sum(numeric_only=True, axis=0)
+        mpesa_agg = mpesa_agg.where(pd.notnull(mpesa_agg), None)
+
+
+
         # #show bar of each cateory
         agree = st.button("Click to see the visualization")
         if agree:
-            fig= px.bar(df_selected_group, x ="COHORT", y = "TOTAL AMOUNT", color ="ACTIVITY", hover_name="ACTIVITY")
-            fig.update_layout(width=800)
+            fig= px.bar(mpesa_agg, x ="COHORT", y = "TOTAL AMOUNT", color ="ACTIVITY", hover_name="ACTIVITY")
+            fig.update_layout(width=1200,xaxis={'categoryorder':'category ascending'})
             st.write(fig)
 
-        # #filtering data per the month
-        # df_month_group = mpesa_df[(mpesa_df.month.isin(month_group))]
-
-
-        # st.header('Display the Monthly Stats of Selected Group(s)')
-        # st.write('Data Dimension: ' + str(df_month_group.shape[0]) + ' rows and ' + str(df_month_group.shape[1]) + ' columns.')
-        # st.dataframe(df_month_group)
 
         #Download the csv file.
         def filedownload(df):
@@ -149,15 +161,5 @@ with dataset:
         mpesa_agg.columns = [' '.join(col).strip() for col in mpesa_agg.columns.values]
         mpesa_agg = mpesa_agg.where(pd.notnull(mpesa_agg), None)
 
-        #st.dataframe(mpesa_agg)
 
-
-        # #"label+value+percent parent+percent entry+percent root"
-        # fig =px.treemap(mpesa_agg, path=['transactions_cohort', 'transactions_group','receiver_desc'], values='total_amount sum')
-        # # this is what I don't like, accessing traces like this
-        # fig.data[0].textinfo = 'label+text+value+percent root'
-
-        # #fig.layout.hovertamplate = '%{label}<br>%{value}'
-        # fig.data[0].hovertemplate = '%{label}<br>%{value}'
-        # fig.show()
 
