@@ -53,6 +53,7 @@ with header:
     * Which bills do I pay often?
     """
     )
+    st.markdown("##")
 
 with dataset:
     st.sidebar.title("Please upload pdf here:")
@@ -67,9 +68,10 @@ with dataset:
         
     dfs = tabula.read_pdf(uploaded_file,pages="all",multiple_tables=True,password = password,stream=True, lattice=  True)
     
-mpesa_df = pdf_cleaner_wrangler(dfs)
+    mpesa_df = pdf_cleaner_wrangler(dfs)
 
 with sidebar_contents:
+ 
     #select the year of interest
     #st.sidebar.title("Features Selection")
     st.sidebar.subheader("Which year would you like to see?")
@@ -78,9 +80,14 @@ with sidebar_contents:
 
     #creating select box
     st.sidebar.subheader("Which month would you like to see?")
+    container = st.sidebar.container()
     sorted_month_group = sorted(mpesa_df.month.unique())
-    month_group = st.sidebar.multiselect('month', sorted_month_group, sorted_month_group, key = 'selected_month')
-
+    all = st.sidebar.checkbox("Select all")
+    
+    if all:
+        month_group = container.multiselect('month', sorted_month_group, sorted_month_group)
+    else:
+        month_group = container.multiselect('month', sorted_month_group,sorted_month_group)
 
     # Sidebar - Group selection selection
     st.sidebar.subheader("Which transaction category would you like to see?")
@@ -141,32 +148,28 @@ left_column.plotly_chart(fig_money_in, use_container_width=True)
 right_column.plotly_chart(fig_money_out, use_container_width=True)
 
 
-st.header('Sample Transactions in the selected period')
-st.dataframe(df_selected_group.head())
-
 # Group the data frame by month and item and extract a number of stats from each group
-mpesa_agg =df_selected_group.groupby(['COHORT','ACTIVITY'], as_index= False).agg({
-                                        # Find the min, max, and sum of the duration column
-                                        'MONEY OUT': ["count", sum],
-                                        # find the number of network type entries
-                                        'MONEY IN': [sum],
-                                        # find the number of network type entries
-                                        'TOTAL AMOUNT': [sum]
-                                                            }
-                                                            )
+mpesa_agg =df_selected_group.groupby(['COHORT'], as_index= False).agg({'TOTAL AMOUNT': [sum]})
 
 mpesa_agg.columns = [' '.join(col).strip(' sum') for col in mpesa_agg.columns.values]
 #mpesa_agg.loc['Total']= mpesa_agg.sum(numeric_only=True, axis=0)
 mpesa_agg = mpesa_agg.where(pd.notnull(mpesa_agg), None)
 
 
+#BAR CHART
+fig= px.bar(mpesa_agg, x ="COHORT", y = "TOTAL AMOUNT",text="TOTAL AMOUNT", title="<b>Total Transactions Amount per Month</b>",
+    color_discrete_sequence=["#0083B8"] * len(mpesa_agg),
+    template="plotly_white")
+fig.update_traces(texttemplate='%{text:.2s}', textposition='outside')
+fig.update_layout(width=1500,xaxis={'categoryorder':'category ascending'})
+fig.update_layout(
+    xaxis=dict(tickmode="linear"),
+    plot_bgcolor="rgba(0,0,0,0)",
+    yaxis=(dict(showgrid=False)),
+)
 
-# #show bar of each cateory
-agree = st.button("Click to see the visualization")
-if agree:
-    fig= px.bar(mpesa_agg, x ="COHORT", y = "TOTAL AMOUNT", color ="ACTIVITY", hover_name="ACTIVITY")
-    fig.update_layout(width=1200,xaxis={'categoryorder':'category ascending'})
-    st.write(fig)
+st.write(fig)
+
 
 
 #Download the csv file.
@@ -178,18 +181,7 @@ def filedownload(df):
 
 st.markdown(filedownload(df_selected_group), unsafe_allow_html = True)
 
-# Group the data frame by month and item and extract a number of stats from each group
-mpesa_agg =df_selected_group.groupby(['COHORT','ACTIVITY','RECIPIENT'], as_index= False).agg({
-                                        # Find the min, max, and sum of the duration column
-                                        'MONEY OUT': ["count", sum],
-                                        # find the number of network type entries
-                                        'MONEY IN': [sum],
-                                        'TOTAL AMOUNT':[sum]
-                                        }
-                                        )
 
-mpesa_agg.columns = [' '.join(col).strip() for col in mpesa_agg.columns.values]
-mpesa_agg = mpesa_agg.where(pd.notnull(mpesa_agg), None)
 
 # ---- HIDE STREAMLIT STYLE ----
 # hide_st_style = """
