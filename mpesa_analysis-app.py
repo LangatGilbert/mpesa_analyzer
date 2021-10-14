@@ -55,31 +55,28 @@ with header:
     )
     st.markdown("##")
 
-with dataset:
-    st.sidebar.title("Please upload pdf here:")
+@st.cache
+def get_data_from_pdf():
+    df = tabula.read_pdf("decrypted.pdf",
+        pages="all",
+        multiple_tables=True,
+        stream=True, lattice=  True)
     
-    #insert file uploading sidebar
-    uploaded_file = st.sidebar.file_uploader("Upload your M-Pesa statement:", type=["pdf"]) 
+    _df = pdf_cleaner_wrangler(df)
 
-    #input the pdf password
-    password = st.sidebar.text_input("Input your pdf password","Type Here",type = 'password')
+    return _df
 
-    #if uploaded_file is not None:
-        
-    dfs = tabula.read_pdf(uploaded_file,pages="all",multiple_tables=True,password = password,stream=True, lattice=  True)
-    
-    mpesa_df = pdf_cleaner_wrangler(dfs)
+mpesa_df = get_data_from_pdf()
+
 
 with sidebar_contents:
- 
-    #select the year of interest
-    #st.sidebar.title("Features Selection")
-    st.sidebar.subheader("Which year would you like to see?")
+    st.sidebar.header("Choose your filters here:")
+    st.sidebar.subheader("Select the year:")
     year_options = mpesa_df['year'].unique().tolist()
     selected_year = st.sidebar.selectbox('year',year_options,0)
 
     #creating select box
-    st.sidebar.subheader("Which month would you like to see?")
+    st.sidebar.subheader("Select the month:")
     container = st.sidebar.container()
     sorted_month_group = sorted(mpesa_df.month.unique())
     all = st.sidebar.checkbox("Select all")
@@ -87,10 +84,10 @@ with sidebar_contents:
     if all:
         month_group = container.multiselect('month', sorted_month_group, sorted_month_group)
     else:
-        month_group = container.multiselect('month', sorted_month_group,sorted_month_group)
+        month_group = container.multiselect('month', sorted_month_group)
 
     # Sidebar - Group selection selection
-    st.sidebar.subheader("Which transaction category would you like to see?")
+    st.sidebar.subheader("Select the transaction type:")
     sorted_unique_group = sorted(mpesa_df.ACTIVITY.unique())
     selected_group = st.sidebar.multiselect('transaction category', sorted_unique_group, sorted_unique_group, key = 'selected_trans_group')
 

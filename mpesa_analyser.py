@@ -125,51 +125,51 @@ def pdf_cleaner_wrangler(dfs):
         if 'Funds Charge' in row.DETAILS:
             text_group.append('Charges')
         elif 'Business Payment from' in row.DETAILS:
-            text_group.append('Business Payments')
+            text_group.append('From Business')
         elif 'Loan Repayment' in row.DETAILS:
             text_group.append('Loan Repayment')
         elif 'Receive International Transfer From' in row.DETAILS:
-            text_group.append('Received-International')
+            text_group.append('From International')
         elif 'Airtime' in row.DETAILS:
             text_group.append('Airtime')
         elif 'Customer Transfer to' in row.DETAILS:
-            text_group.append('Sending')
+            text_group.append('Send Money')
         elif 'Customer Transfer Fuliza' in row.DETAILS:
             text_group.append('Fuliza')   
         elif 'Customer Withdrawal At' in row.DETAILS:
-            text_group.append('Withdrawal')
+            text_group.append('Withdrawals')
         elif 'Withdrawal Charge' in row.DETAILS: 
             text_group.append('Charges')
         elif 'Buy Bundles' in row.DETAILS: 
-            text_group.append('Buy Bundles')
+            text_group.append('Bills & Services')
         elif 'Pay Bill' in row.DETAILS:
-            text_group.append('Pay Bills')
+            text_group.append('Bills & Services')
         elif 'Pay Bill Charge' in row.DETAILS:
             text_group.append('Charges')
-        elif 'Merchant Payment' in row.DETAILS: 
-            text_group.append('Merchant Payments')
-        elif 'Funds received from' in row.DETAILS: 
-            text_group.append('Received')
+        elif 'Merchant' in row.DETAILS: 
+            text_group.append('Merchants')
+        elif 'Funds received from' or 'Receive funds from' in row.DETAILS: 
+            text_group.append('Received Money')
         elif 'OverDraft' in row.DETAILS: 
-            text_group.append('Overdraft')
+            text_group.append('Fuliza')
         elif 'Promotion Payment from' in row.DETAILS: 
-            text_group.append('Promotion Payments')
+            text_group.append('From Promotion')
         elif 'Deposit of Funds at ' in row.DETAILS: 
-            text_group.append('Deposit')
+            text_group.append('Deposits')
         elif 'M-Shwari Deposit' in row.DETAILS: 
-            text_group.append('M-Shwari Deposit')
+            text_group.append('Deposits to M-Shwari')
         elif 'M-Shwari Withdraw' in row.DETAILS: 
-            text_group.append('M-Shwari Withdraws')
+            text_group.append('Withdrawals from M-Shwari')
         elif 'Pay Merchant Charge' in row.DETAILS: 
             text_group.append('Charges')
         elif 'Reversal' in row.DETAILS: 
-            text_group.append('Reversal')
+            text_group.append('Reversals')
         elif 'M-Shwari Lock Deposit' in row.DETAILS: 
-            text_group.append('M-Shwari Deposits')
+            text_group.append('Deposits to M-Shwari')
         elif 'M-Shwari Loan Disburse' in row.DETAILS: 
-            text_group.append('M-Shwari Loan')
+            text_group.append('M-Shwari')
         else :
-            text_group.append('unclassified')
+            text_group.append('others')
             
     mpesa_df['ACTIVITY'] = text_group
 
