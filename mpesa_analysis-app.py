@@ -10,7 +10,6 @@ import pandas as pd
 pd.options.display.float_format = "{:,.2f}".format
 
 #for data visualization
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import plotly.express as px
 from plotly.subplots import make_subplots
