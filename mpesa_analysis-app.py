@@ -145,7 +145,7 @@ right_column.plotly_chart(fig_money_out, use_container_width=True)
 
 
 # Group the data frame by month and item and extract a number of stats from each group
-mpesa_agg =df_selected_group.groupby(['COHORT'], as_index= False).agg({'TOTAL AMOUNT': [sum]})
+mpesa_agg =df_selected_group.groupby(['COHORT'], as_index= False).agg({'MONEY OUT': [sum],'MONEY IN': [sum],'TOTAL AMOUNT': [sum]})
 
 mpesa_agg.columns = [' '.join(col).strip(' sum') for col in mpesa_agg.columns.values]
 #mpesa_agg.loc['Total']= mpesa_agg.sum(numeric_only=True, axis=0)
@@ -153,10 +153,10 @@ mpesa_agg = mpesa_agg.where(pd.notnull(mpesa_agg), None)
 
 
 #BAR CHART
-fig= px.bar(mpesa_agg, x ="COHORT", y = "TOTAL AMOUNT",text="TOTAL AMOUNT", title="<b>Total Transactions Amount per Month</b>",
-    color_discrete_sequence=["#0083B8"] * len(mpesa_agg),
+fig= px.bar(mpesa_agg, x ="COHORT", y =["MONEY IN","MONEY OUT"], title="<b>Total Transactions Amount per Month</b>",
+    #color_discrete_sequence=["#0083B8"] * len(mpesa_agg),
     template="plotly_white")
-fig.update_traces(texttemplate='%{text:.2s}', textposition='outside')
+#fig.update_traces(texttemplate='%{text:.2s}', textposition='outside')
 fig.update_layout(width=1500,xaxis={'categoryorder':'category ascending'})
 fig.update_layout(
     xaxis=dict(tickmode="linear"),
