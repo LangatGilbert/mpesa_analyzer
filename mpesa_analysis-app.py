@@ -23,12 +23,6 @@ import calendar
 import streamlit as st
 st.set_page_config(page_title ="M-Pesa Transactions Analysis Dashboard",page_icon=":bar_chart:", layout="wide")
 
-from mpesa_analyser import pdf_cleaner_wrangler
-
-#for pdf extraction as pdf
-import tabula
-from tabula.io import read_pdf
-
 
 # Supress unnecessary warnings so that presentation looks clean
 import warnings
@@ -55,17 +49,12 @@ with header:
     st.markdown("##")
 
 @st.cache
-def get_data_from_pdf():
-    df = tabula.read_pdf("decrypted.pdf",
-        pages="all",
-        multiple_tables=True,
-        stream=True, lattice=  True)
-    
-    _df = pdf_cleaner_wrangler(df)
+def get_data_from_csv():
+    _df = pd.read_csv("mpesa_statement.csv")
 
     return _df
 
-mpesa_df = get_data_from_pdf()
+mpesa_df = get_data_from_csv()
 
 
 with sidebar_contents:
@@ -76,15 +65,9 @@ with sidebar_contents:
 
     #creating select box
     st.sidebar.subheader("Select the month:")
-    container = st.sidebar.container()
     sorted_month_group = sorted(mpesa_df.month.unique())
-    all = st.sidebar.checkbox("Select all")
-    
-    if all:
-        month_group = container.multiselect('month', sorted_month_group, sorted_month_group)
-    else:
-        month_group = container.multiselect('month', sorted_month_group)
-
+    month_group = st.sidebar.multiselect('month', sorted_month_group, sorted_month_group)
+   
     # Sidebar - Group selection selection
     st.sidebar.subheader("Select the transaction type:")
     sorted_unique_group = sorted(mpesa_df.ACTIVITY.unique())
