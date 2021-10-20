@@ -50,7 +50,7 @@ with header:
 
 @st.cache
 def get_data_from_csv():
-    _df = pd.read_csv("mpesa_statement.csv")
+    _df = pd.read_csv("mpesa_truncanted.csv")
 
     return _df
 
