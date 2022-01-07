@@ -36,12 +36,12 @@ sidebar_contents =  st.container()
 #st.cache
 with header:
     #setting up the title
-    st.title(":bar_chart: M-Pesa Transactions Analysis Dashboard")
+    st.title(":bar_chart: M-Pesa Analysis Dashboard")
     
     st.markdown("""
-    This helps you understand your M-Pesa inflows and outflows within a specified period. The Goal is to answer the following:
+    This helps you understand your M-Pesa transactions within the specified period. The Goal is to answer the following:
     * Where does majority of my inflows come from?
-    * Where does my outflows go to?
+    * Where does your outflows go to?
     * Who are top merchants I transact with?
     * Which bills do I pay often?
     """
